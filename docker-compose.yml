@@ -1,0 +1,33 @@
+services:
+  derp:
+    image: janhouse/tailscaled-derper
+    restart: unless-stopped
+    volumes:
+      - ${DOCKER_DATA}/headscale/certs/${DOMAIN_NAME}/fullchain.pem:/app/certs/${DOMAIN_NAME}.crt
+      - ${DOCKER_DATA}/headscale/certs/${DOMAIN_NAME}/privkey.pem:/app/certs/${DOMAIN_NAME}.key
+      - /dev/net/tun:/dev/net/tun
+      - ${DOCKER_DATA}/headscale/derp-data:/var/lib/tailscale
+    cap_add:
+      - net_admin
+    ports:
+      - "10.10.12.2:36544:443"
+      - "10.10.12.2:34484:3478/udp"
+    environment:
+      DERP_CERT_MODE: "manual"
+      DERP_DOMAIN: "${DOMAIN_NAME}"
+      DERP_VERIFY_CLIENTS: "true"
+  # docker compose exec derp tailscale up --login-server=https://$DOMAIN_NAME --hostname=derp --accept-dns=false
+
+  traefik-ssl-certificate-exporter:
+    image: rafi0101/traefik-ssl-certificate-exporter:latest
+    environment:
+      CRON_TIME: "* * * * *"
+      CERT_OWNER_ID: "0"
+      CERT_GROUP_ID: "0"
+    volumes:
+      - ${DOCKER_DATA}/traefik-auth/acme/acme.json:/app/traefik/acme.json
+      - ${DOCKER_DATA}/headscale/certs:/app/certs
+    restart: unless-stopped
+    network_mode: none
+
+
