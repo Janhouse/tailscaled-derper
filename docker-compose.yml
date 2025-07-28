@@ -1,6 +1,9 @@
 services:
   derp:
     image: janhouse/tailscaled-derper
+    build:
+      dockerfile: ./Dockerfile
+      context: ./
     restart: unless-stopped
     volumes:
       - ${DOCKER_DATA}/headscale/certs/${DOMAIN_NAME}/fullchain.pem:/app/certs/${DOMAIN_NAME}.crt
