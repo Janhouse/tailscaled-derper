@@ -1,8 +1,18 @@
-FROM golang AS builder
+# FROM golang AS builder
+# WORKDIR /app 
+# RUN git clone https://github.com/tailscale/tailscale/ && \
+#     cd tailscale && \
+#     CGO_ENABLED=0 go build -o derper  ./cmd/derper/
+
+FROM archlinux AS builder
+RUN pacman -Sy --noconfirm && \
+    pacman -S --noconfirm git base-devel go && \
+    rm /var/cache/pacman/pkg/* && \
+    mkdir /app
 WORKDIR /app 
 RUN git clone https://github.com/tailscale/tailscale/ && \
     cd tailscale && \
-    CGO_ENABLED=0 go build -o derper  ./cmd/derper/
+    CGO_ENABLED=1 go build -o derper  ./cmd/derper/
 
 FROM archlinux AS builder2
 # RUN apk add --no-cache ca-certificates git build-base wget && \
@@ -46,4 +56,3 @@ ENV DERP_CERT_MODE=manual
 ENV LIBPROXYPROTO_DEBUG=true
 
 ENTRYPOINT ["/bin/entrypoint.sh"]
-#CMD  & /usr/sbin/tailscaled
